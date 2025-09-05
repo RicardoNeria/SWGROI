@@ -1,11 +1,10 @@
 using System;
 using System.Net;
 using System.Text;
-using SWGROI_Server.Security;
+using System.Web;
 
 public static class SesionController
 {
-    // Devuelve usuario/rol de la sesión; mantiene compatibilidad con cookies antiguas.
     public static void ManejarSolicitud(HttpListenerContext context)
     {
         if (context.Request.HttpMethod != "GET")
@@ -14,19 +13,18 @@ public static class SesionController
             return;
         }
 
-        var u = SessionManager.GetUser(context.Request);
-        string usuario = u?.user ?? ObtenerValorCookie(context, "usuario");
-        string rol = u?.role ?? ObtenerValorCookie(context, "rol");
+        string usuarioCookie = ObtenerValorCookie(context, "usuario");
+        string rolCookie = ObtenerValorCookie(context, "rol");
 
-        if (string.IsNullOrEmpty(usuario) || string.IsNullOrEmpty(rol))
+        if (string.IsNullOrEmpty(usuarioCookie) || string.IsNullOrEmpty(rolCookie))
         {
             ResponderConError(context, "Sesión no válida", HttpStatusCode.Unauthorized);
             return;
         }
 
-        string respuestaJson = "{\"usuario\":\"" + usuario.Replace("\"","\\\"") + "\",\"rol\":\"" + rol.Replace("\"","\\\"") + "\"}";
+        string respuestaJson = "{\"usuario\":\"" + usuarioCookie + "\",\"rol\":\"" + rolCookie + "\"}";
         byte[] buffer = Encoding.UTF8.GetBytes(respuestaJson);
-
+       
         context.Response.ContentType = "application/json";
         context.Response.ContentEncoding = Encoding.UTF8;
         context.Response.ContentLength64 = buffer.Length;
@@ -36,14 +34,24 @@ public static class SesionController
 
     private static string ObtenerValorCookie(HttpListenerContext context, string nombre)
     {
+        string valor = "";
         string cookies = context.Request.Headers["Cookie"];
-        if (string.IsNullOrEmpty(cookies)) return string.Empty;
-        foreach (var parte in cookies.Split(';'))
+
+        if (!string.IsNullOrEmpty(cookies))
         {
-            var kv = parte.Trim().Split('=');
-            if (kv.Length == 2 && kv[0] == nombre) return WebUtility.UrlDecode(kv[1]);
+            string[] partes = cookies.Split(';');
+            foreach (string parte in partes)
+            {
+                string[] keyValue = parte.Trim().Split('=');
+                if (keyValue.Length == 2 && keyValue[0] == nombre)
+                {
+                    valor = WebUtility.UrlDecode(keyValue[1]);
+                    break;
+                }
+            }
         }
-        return string.Empty;
+
+        return valor;
     }
 
     private static void ResponderConError(HttpListenerContext context, string mensaje, HttpStatusCode codigo)

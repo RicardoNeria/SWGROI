@@ -1,5 +1,6 @@
-﻿using System.Net;
 using System.IO;
+using System.Net;
+using SWGROI_Server.Security;
 
 namespace SWGROI_Server.Controllers
 {
@@ -7,14 +8,14 @@ namespace SWGROI_Server.Controllers
     {
         public static void Procesar(HttpListenerContext context)
         {
-            // Eliminar cookie
-            context.Response.AppendCookie(new Cookie("usuario", "")
-            {
-                Expires = System.DateTime.Now.AddDays(-1)
-            });
-
+            // Invalidar sesión y expirar cookies de compatibilidad sin romper el front.
+            SessionManager.Destroy(context);
+            context.Response.Headers.Add("Set-Cookie", "usuario=; Path=/; Max-Age=0");
+            context.Response.Headers.Add("Set-Cookie", "rol=; Path=/; Max-Age=0");
+            context.Response.Headers.Add("Set-Cookie", "nombre=; Path=/; Max-Age=0");
             context.Response.Redirect("/login.html");
             context.Response.Close();
         }
     }
 }
+

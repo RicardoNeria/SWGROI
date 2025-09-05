@@ -1,0 +1,45 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Métricas de Desempeño</title>
+    <link rel="stylesheet" href="/styles/estilo.css">
+    <script src="/scripts/seguridad.js" defer></script>
+    <style>
+    </style>
+</head>
+<body>
+    <h1>Métricas de Desempeño y Resolución</h1>
+
+    <div class="contenedor-metricas">
+        <h2>Tiempos Promedio de Resolución por Estado</h2>
+        <table id="tablaTiempos">
+            <thead>
+                <tr>
+                    <th>Estado</th>
+                    <th>Promedio de Tiempo (horas)</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <h2>Tickets Atendidos por Técnico</h2>
+        <table id="tablaTecnicos">
+            <thead>
+                <tr>
+                    <th>Técnico</th>
+                    <th>Total de Tickets Cerrados</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <div class="acciones-finales">
+            <button onclick="window.location.href='/menu.html'">Regresar al menú</button>
+            <button onclick="window.location.href='/logout'">Cerrar sesión</button>
+        </div>
+    </div>
+
+    <script src="/scripts/metricas.js"></script>
+</body>
+</html>
