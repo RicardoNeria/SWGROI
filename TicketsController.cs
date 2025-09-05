@@ -31,20 +31,46 @@ namespace SWGROI_Server.Controllers
                 writer.Write("Método no permitido.");
             }
         }
+        private static void Json(HttpListenerResponse res, int status, string jsonText)
+        {
+            var bytes = System.Text.Encoding.UTF8.GetBytes(jsonText);
+            res.StatusCode = status;
+            res.ContentType = "application/json; charset=utf-8";
+            res.ContentLength64 = bytes.Length;
+            res.OutputStream.Write(bytes, 0, bytes.Length);
+            res.OutputStream.Close();
+        }
+
         private static void RegistrarTicket(HttpListenerContext context)
         {
             using var reader = new StreamReader(context.Request.InputStream);
             string body = reader.ReadToEnd();
             var datos = ParsearDatos(body);
 
-            if (!datos.ContainsKey("Folio") || !datos.ContainsKey("Descripcion") ||
-                !datos.ContainsKey("Responsable") || !datos.ContainsKey("Estado"))
-            {
-                context.Response.StatusCode = 400;
-                using var w1 = new StreamWriter(context.Response.OutputStream);
-                w1.Write("Faltan datos obligatorios para registrar el ticket.");
-                return;
-            }
+            // Normalización
+            string folio = datos.ContainsKey("Folio") ? (datos["Folio"] ?? "").Trim().ToUpperInvariant() : "";
+            string descripcion = datos.ContainsKey("Descripcion") ? (datos["Descripcion"] ?? "").Trim() : "";
+            string responsable = datos.ContainsKey("Responsable") ? (datos["Responsable"] ?? "").Trim() : "";
+            string estado = datos.ContainsKey("Estado") ? (datos["Estado"] ?? "").Trim() : "";
+
+            // Validaciones
+            if (string.IsNullOrWhiteSpace(folio) || string.IsNullOrWhiteSpace(descripcion) ||
+                string.IsNullOrWhiteSpace(responsable) || string.IsNullOrWhiteSpace(estado))
+            { Json(context.Response, 400, "{\"ok\":false,\"message\":\"Faltan datos obligatorios\"}"); return; }
+
+            if (!System.Text.RegularExpressions.Regex.IsMatch(folio, "^[A-Z0-9\\-]{6,20}$"))
+            { Json(context.Response, 400, "{\"ok\":false,\"message\":\"El folio debe tener 6–20 caracteres alfanuméricos\"}"); return; }
+
+            if (descripcion.Length < 10 || descripcion.Length > 500)
+            { Json(context.Response, 400, "{\"ok\":false,\"message\":\"La descripción debe tener entre 10 y 500 caracteres\"}"); return; }
+
+            if (responsable.Length == 0 || responsable.Length > 100)
+            { Json(context.Response, 400, "{\"ok\":false,\"message\":\"El responsable debe tener hasta 100 caracteres\"}"); return; }
+
+            var estadosPermitidos = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            { "Almacén","Capturado","Programado/Asignado","Abierto","En Proceso","Cerrado" };
+            if (!estadosPermitidos.Contains(estado))
+            { Json(context.Response, 400, "{\"ok\":false,\"message\":\"Estado no válido\"}"); return; }
 
             using var conexion = new MySqlConnection(ConexionBD.CadenaConexion);
             conexion.Open();
@@ -57,9 +83,7 @@ namespace SWGROI_Server.Controllers
 
             if (estadoExistente != null)
             {
-                context.Response.StatusCode = 200;
-                using var w2 = new StreamWriter(context.Response.OutputStream);
-                w2.Write("Ticket registrado previamente. En espera de actualización por Mesa de Control.");
+                Json(context.Response, 200, "{\"ok\":true,\"message\":\"Ticket registrado previamente. En espera de actualización por Mesa de Control.\"}");
                 return;
             }
 
@@ -68,19 +92,17 @@ namespace SWGROI_Server.Controllers
         VALUES (@Folio, @Descripcion, @Responsable, @Estado, @Comentario, NOW())";
 
             using var cmd = new MySqlCommand(query, conexion);
-            cmd.Parameters.AddWithValue("@Folio", datos["Folio"]);
-            cmd.Parameters.AddWithValue("@Descripcion", datos["Descripcion"]);
-            cmd.Parameters.AddWithValue("@Responsable", datos["Responsable"]);
-            cmd.Parameters.AddWithValue("@Estado", datos["Estado"]);
+            cmd.Parameters.AddWithValue("@Folio", folio);
+            cmd.Parameters.AddWithValue("@Descripcion", descripcion);
+            cmd.Parameters.AddWithValue("@Responsable", responsable);
+            cmd.Parameters.AddWithValue("@Estado", estado);
             cmd.Parameters.AddWithValue("@Comentario", ""); // Comentario vacío por defecto
 
             int resultado = cmd.ExecuteNonQuery();
-            context.Response.StatusCode = resultado > 0 ? 200 : 400;
-
-            using var writer = new StreamWriter(context.Response.OutputStream);
-            writer.Write(resultado > 0
-                ? "Ticket registrado correctamente."
-                : "No se pudo registrar el ticket.");
+            if (resultado > 0)
+                Json(context.Response, 200, "{\"ok\":true,\"message\":\"Ticket registrado correctamente\"}");
+            else
+                Json(context.Response, 400, "{\"ok\":false,\"message\":\"No se pudo registrar el ticket\"}");
         }
 
 
@@ -90,14 +112,23 @@ namespace SWGROI_Server.Controllers
             string body = reader.ReadToEnd();
             var datos = ParsearDatos(body);
 
-            if (!datos.ContainsKey("folio") || !datos.ContainsKey("descripcion") ||
-                !datos.ContainsKey("responsable") || !datos.ContainsKey("estado"))
-            {
-                context.Response.StatusCode = 400;
-                using var w1 = new StreamWriter(context.Response.OutputStream);
-                w1.Write("Faltan datos obligatorios para actualizar el ticket.");
-                return;
-            }
+            string folio = datos.ContainsKey("folio") ? (datos["folio"] ?? "").Trim().ToUpperInvariant() : "";
+            string descripcion = datos.ContainsKey("descripcion") ? (datos["descripcion"] ?? "").Trim() : "";
+            string responsable = datos.ContainsKey("responsable") ? (datos["responsable"] ?? "").Trim() : "";
+            string estado = datos.ContainsKey("estado") ? (datos["estado"] ?? "").Trim() : "";
+
+            if (string.IsNullOrWhiteSpace(folio) || string.IsNullOrWhiteSpace(descripcion) ||
+                string.IsNullOrWhiteSpace(responsable) || string.IsNullOrWhiteSpace(estado))
+            { Json(context.Response, 400, "{\"ok\":false,\"message\":\"Faltan datos obligatorios para actualizar el ticket\"}"); return; }
+
+            if (!System.Text.RegularExpressions.Regex.IsMatch(folio, "^[A-Z0-9\\-]{6,20}$"))
+            { Json(context.Response, 400, "{\"ok\":false,\"message\":\"El folio debe tener 6–20 caracteres alfanuméricos\"}"); return; }
+
+            if (descripcion.Length < 10 || descripcion.Length > 500)
+            { Json(context.Response, 400, "{\"ok\":false,\"message\":\"La descripción debe tener entre 10 y 500 caracteres\"}"); return; }
+
+            if (responsable.Length == 0 || responsable.Length > 100)
+            { Json(context.Response, 400, "{\"ok\":false,\"message\":\"El responsable debe tener hasta 100 caracteres\"}"); return; }
 
             using var conexion = new MySqlConnection(ConexionBD.CadenaConexion);
             conexion.Open();
@@ -109,24 +140,22 @@ namespace SWGROI_Server.Controllers
                              WHERE Folio = @Folio";
 
             using var cmd = new MySqlCommand(query, conexion);
-            cmd.Parameters.AddWithValue("@Descripcion", datos["descripcion"]);
-            cmd.Parameters.AddWithValue("@Responsable", datos["responsable"]);
-            cmd.Parameters.AddWithValue("@Estado", datos["estado"]);
-            cmd.Parameters.AddWithValue("@Folio", datos["folio"]);
+            cmd.Parameters.AddWithValue("@Descripcion", descripcion);
+            cmd.Parameters.AddWithValue("@Responsable", responsable);
+            cmd.Parameters.AddWithValue("@Estado", estado);
+            cmd.Parameters.AddWithValue("@Folio", folio);
 
             int resultado = cmd.ExecuteNonQuery();
-            context.Response.StatusCode = resultado > 0 ? 200 : 400;
-
-            using var writer = new StreamWriter(context.Response.OutputStream);
-            writer.Write(resultado > 0
-                ? "Ticket actualizado correctamente."
-                : "No se pudo actualizar el ticket.");
+            if (resultado > 0)
+                Json(context.Response, 200, "{\"ok\":true,\"message\":\"Ticket actualizado correctamente\"}");
+            else
+                Json(context.Response, 400, "{\"ok\":false,\"message\":\"No se pudo actualizar el ticket\"}");
         }
 
         private static Dictionary<string, string> ParsearDatos(string body)
         {
             var dict = new Dictionary<string, string>();
-            body = body.Trim('{', '}').Replace("\"", "");
+            body = (body ?? string.Empty).Trim('{', '}').Replace("\"", "");
             foreach (var par in body.Split(','))
             {
                 var kv = par.Split(':');

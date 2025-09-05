@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Gestión de Tickets - SWGROI</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/styles/estilo_general.css">
     <link rel="stylesheet" href="/styles/tickets_estilo.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 </head>
@@ -38,10 +39,10 @@
                     <!-- Columna izquierda -->
                     <div class="columna-form">
                         <label for="folio">Folio del Ticket:</label>
-                        <input type="text" id="folio" name="folio" required>
+                        <input type="text" id="folio" name="folio" required pattern="^[A-Z0-9\-]{6,20}$" minlength="6" maxlength="20" title="6–20 caracteres alfanuméricos en mayúsculas">
 
                         <label for="descripcion">Descripción:</label>
-                        <textarea id="descripcion" name="descripcion" required></textarea>
+                        <textarea id="descripcion" name="descripcion" required minlength="10" maxlength="500"></textarea>
 
                         <label for="estado">Estado Inicial:</label>
                         <select id="estado" name="estado" required>
@@ -66,8 +67,8 @@
                         <input type="text" id="responsable" name="responsable" readonly>
 
                         <div class="botones-tickets">
-                            <button type="submit" class="btn verde">Registrar Ticket</button>
-                            <button type="button" id="actualizarBtn" class="btn naranja">Actualizar Ticket</button>
+                            <button type="submit" class="btn verde" data-loading>Registrar Ticket</button>
+                            <button type="button" id="actualizarBtn" class="btn naranja" data-loading>Actualizar Ticket</button>
                             <button type="button" id="limpiarBtn" class="btn gris">Limpiar Campos</button>
                         </div>
                     </div>
@@ -92,6 +93,7 @@
     </main>
 
     <!-- SCRIPTS -->
+    <script src="/scripts/ui.js"></script>
     <script src="/scripts/tickets.js"></script>
     <script src="/scripts/seguridad.js"></script>
 

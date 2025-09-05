@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>Iniciar Sesión - SWGROI</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/styles/estilo_general.css">
     <link rel="stylesheet" href="/styles/login_estilo.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 </head>
@@ -16,10 +17,10 @@
 
             <form id="formLogin" class="form-login">
                 <label for="usuario">Usuario:</label>
-                <input type="text" id="usuario" required>
+                <input type="text" id="usuario" required minlength="3" maxlength="100">
 
                 <label for="contrasena">Contraseña:</label>
-                <input type="password" id="contrasena" required>
+                <input type="password" id="contrasena" required minlength="6" maxlength="100">
 
                 <div class="captcha-container">
                     <span id="captchaPregunta"></span>
@@ -31,10 +32,11 @@
             </form>
 
             <a href="/recuperar.html" class="link-recuperar">¿Olvidaste tu contraseña?</a>
-            <div id="mensajeLogin"></div>
+            <div id="mensajeLogin" aria-live="polite"></div>
         </div>
     </div>
 
+    <script src="/scripts/ui.js"></script>
     <script>
         let captchaResultado = 0;
 

@@ -6,7 +6,7 @@ namespace SWGROI_Server.DB
 {
     public static class ConexionBD
     {
-        public static string CadenaConexion = "Server=localhost;Database=swgroi_db;Uid=root;Pwd=123456;";
+        public static string CadenaConexion => DbConfig.ConnectionString;
 
         public static int ContarRegistros(string tabla)
         {

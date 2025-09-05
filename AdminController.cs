@@ -99,6 +99,18 @@ namespace SWGROI_Server.Controllers
 
             Dictionary<string, string> datos = ParseJson(body);
 
+            // Validaciones básicas espejo del front
+            string nombre = datos.ContainsKey("NombreCompleto") ? (datos["NombreCompleto"] ?? "").Trim() : "";
+            string usuario = datos.ContainsKey("Usuario") ? (datos["Usuario"] ?? "").Trim() : "";
+            string contrasena = datos.ContainsKey("Contrasena") ? (datos["Contrasena"] ?? "").Trim() : "";
+            string rol = datos.ContainsKey("Rol") ? (datos["Rol"] ?? "").Trim() : "";
+
+            if (string.IsNullOrWhiteSpace(nombre) || string.IsNullOrWhiteSpace(usuario) || string.IsNullOrWhiteSpace(contrasena) || string.IsNullOrWhiteSpace(rol))
+            { Json(context.Response, 400, "{\"exito\":false,\"mensaje\":\"Faltan datos obligatorios\"}"); return; }
+            if (usuario.Length > 100) { Json(context.Response, 400, "{\"exito\":false,\"mensaje\":\"El usuario debe tener hasta 100 caracteres\"}"); return; }
+            if (nombre.Length > 150) { Json(context.Response, 400, "{\"exito\":false,\"mensaje\":\"El nombre debe tener hasta 150 caracteres\"}"); return; }
+            if (contrasena.Length < 6 || contrasena.Length > 100) { Json(context.Response, 400, "{\"exito\":false,\"mensaje\":\"La contraseña debe tener entre 6 y 100 caracteres\"}"); return; }
+
             try
             {
                 using (var conexion = new MySqlConnection(ConexionBD.CadenaConexion))
@@ -107,10 +119,10 @@ namespace SWGROI_Server.Controllers
                     string sql = "INSERT INTO usuarios (NombreCompleto, Usuario, Contrasena, Rol) VALUES (@n, @u, @p, @r)";
                     using (var cmd = new MySqlCommand(sql, conexion))
                     {
-                        cmd.Parameters.AddWithValue("@n", datos["NombreCompleto"]);
-                        cmd.Parameters.AddWithValue("@u", datos["Usuario"]);
-                        cmd.Parameters.AddWithValue("@p", datos["Contrasena"]);
-                        cmd.Parameters.AddWithValue("@r", datos["Rol"]);
+                        cmd.Parameters.AddWithValue("@n", nombre);
+                        cmd.Parameters.AddWithValue("@u", usuario);
+                        cmd.Parameters.AddWithValue("@p", contrasena);
+                        cmd.Parameters.AddWithValue("@r", rol);
                         cmd.ExecuteNonQuery();
                     }
                 }
@@ -146,10 +158,14 @@ namespace SWGROI_Server.Controllers
                         "UPDATE usuarios SET NombreCompleto=@n, Usuario=@u, Contrasena=@p, Rol=@r WHERE IdUsuario=@id";
                     using (var cmd = new MySqlCommand(sql, conexion))
                     {
-                        cmd.Parameters.AddWithValue("@n", datos["NombreCompleto"]);
-                        cmd.Parameters.AddWithValue("@u", datos["Usuario"]);
-                        cmd.Parameters.AddWithValue("@p", datos["Contrasena"]);
-                        cmd.Parameters.AddWithValue("@r", datos["Rol"]);
+                        string nombre = datos.ContainsKey("NombreCompleto") ? (datos["NombreCompleto"] ?? "").Trim() : "";
+                        string usuario = datos.ContainsKey("Usuario") ? (datos["Usuario"] ?? "").Trim() : "";
+                        string contrasena = datos.ContainsKey("Contrasena") ? (datos["Contrasena"] ?? "").Trim() : "";
+                        string rol = datos.ContainsKey("Rol") ? (datos["Rol"] ?? "").Trim() : "";
+                        cmd.Parameters.AddWithValue("@n", nombre);
+                        cmd.Parameters.AddWithValue("@u", usuario);
+                        cmd.Parameters.AddWithValue("@p", contrasena);
+                        cmd.Parameters.AddWithValue("@r", rol);
                         cmd.Parameters.AddWithValue("@id", datos["IdUsuario"]);
                         filas = cmd.ExecuteNonQuery();
                     }

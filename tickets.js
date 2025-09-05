@@ -58,6 +58,7 @@
 
     form.addEventListener("submit", function (e) {
         e.preventDefault();
+        if (!window.validateForm || !window.validateForm(form)) { return; }
         mostrarModalConfirmacion("Registrar Ticket", "¿Deseas registrar este ticket?", registrarTicket);
     });
 
@@ -79,9 +80,17 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(datos)
         })
-            .then(res => res.text())
-            .then(msg => {
-                mostrarMensaje(msg, msg.toLowerCase().includes("registrado") || msg.toLowerCase().includes("correctamente"));
+            .then(async res => {
+                let ok = res.ok;
+                let payload;
+                try { payload = await res.clone().json(); } catch { payload = await res.text(); }
+                if (typeof payload === 'object' && payload) {
+                    ok = !!payload.ok || res.ok;
+                    mostrarMensaje(payload.message || (ok?"Operación exitosa":"Ocurrió un error"), ok);
+                } else {
+                    const msg = String(payload||'');
+                    mostrarMensaje(msg, ok && (msg.toLowerCase().includes("registrado") || msg.toLowerCase().includes("correctamente")));
+                }
                 form.reset();
                 responsableInput.value = responsableConstante;
                 estadoSeguimientoInput.value = "";
@@ -110,9 +119,17 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(datos)
         })
-            .then(res => res.text())
-            .then(msg => {
-                mostrarMensaje(msg, msg.toLowerCase().includes("actualizado"));
+            .then(async res => {
+                let ok = res.ok;
+                let payload;
+                try { payload = await res.clone().json(); } catch { payload = await res.text(); }
+                if (typeof payload === 'object' && payload) {
+                    ok = !!payload.ok || res.ok;
+                    mostrarMensaje(payload.message || (ok?"Operación exitosa":"Ocurrió un error"), ok);
+                } else {
+                    const msg = String(payload||'');
+                    mostrarMensaje(msg, ok && msg.toLowerCase().includes("actualizado"));
+                }
             })
             .catch(err => {
                 mostrarMensaje("Error al actualizar el ticket.", false);
@@ -128,6 +145,7 @@
         leyenda.style.borderRadius = "8px";
         leyenda.style.marginBottom = "20px";
         leyenda.style.display = "block";
+        try { (exito?window.toastSuccess:window.toastError)(mensajeTexto); } catch {}
         setTimeout(() => leyenda.style.display = "none", 4000);
     }
 
