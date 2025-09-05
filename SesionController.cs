@@ -1,0 +1,65 @@
+﻿using System;
+using System.Net;
+using System.Text;
+using System.Web;
+
+public static class SesionController
+{
+    public static void ManejarSolicitud(HttpListenerContext context)
+    {
+        if (context.Request.HttpMethod != "GET")
+        {
+            ResponderConError(context, "Método no permitido", HttpStatusCode.MethodNotAllowed);
+            return;
+        }
+
+        string usuarioCookie = ObtenerValorCookie(context, "usuario");
+        string rolCookie = ObtenerValorCookie(context, "rol");
+
+        if (string.IsNullOrEmpty(usuarioCookie) || string.IsNullOrEmpty(rolCookie))
+        {
+            ResponderConError(context, "Sesión no válida", HttpStatusCode.Unauthorized);
+            return;
+        }
+
+        string respuestaJson = "{\"usuario\":\"" + usuarioCookie + "\",\"rol\":\"" + rolCookie + "\"}";
+        byte[] buffer = Encoding.UTF8.GetBytes(respuestaJson);
+       
+        context.Response.ContentType = "application/json";
+        context.Response.ContentEncoding = Encoding.UTF8;
+        context.Response.ContentLength64 = buffer.Length;
+        context.Response.OutputStream.Write(buffer, 0, buffer.Length);
+        context.Response.OutputStream.Close();
+    }
+
+    private static string ObtenerValorCookie(HttpListenerContext context, string nombre)
+    {
+        string valor = "";
+        string cookies = context.Request.Headers["Cookie"];
+
+        if (!string.IsNullOrEmpty(cookies))
+        {
+            string[] partes = cookies.Split(';');
+            foreach (string parte in partes)
+            {
+                string[] keyValue = parte.Trim().Split('=');
+                if (keyValue.Length == 2 && keyValue[0] == nombre)
+                {
+                    valor = WebUtility.UrlDecode(keyValue[1]);
+                    break;
+                }
+            }
+        }
+
+        return valor;
+    }
+
+    private static void ResponderConError(HttpListenerContext context, string mensaje, HttpStatusCode codigo)
+    {
+        byte[] buffer = Encoding.UTF8.GetBytes(mensaje);
+        context.Response.StatusCode = (int)codigo;
+        context.Response.ContentType = "text/plain";
+        context.Response.OutputStream.Write(buffer, 0, buffer.Length);
+        context.Response.OutputStream.Close();
+    }
+}

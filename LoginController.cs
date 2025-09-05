@@ -1,0 +1,64 @@
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Net;
+using MySql.Data.MySqlClient;
+using SWGROI_Server.DB;
+using SWGROI_Server.Models;
+
+namespace SWGROI_Server.Controllers
+{
+    public static class LoginController
+    {
+        public static void Procesar(HttpListenerContext context)
+        {
+            if (context.Request.HttpMethod != "POST")
+                return;
+
+            using var reader = new StreamReader(context.Request.InputStream);
+            string body = reader.ReadToEnd();
+
+            // Parseo manual del JSON recibido
+            var campos = new Dictionary<string, string>();
+            body = body.Trim('{', '}').Replace("\"", "");
+            var pares = body.Split(',');
+
+            foreach (var par in pares)
+            {
+                var kv = par.Split(':');
+                if (kv.Length == 2)
+                    campos[kv[0].Trim()] = kv[1].Trim();
+            }
+
+            string usuario = campos.ContainsKey("Usuario") ? campos["Usuario"] : "";
+            string contrasena = campos.ContainsKey("Contrasena") ? campos["Contrasena"] : "";
+
+            using var conexion = new MySqlConnection(ConexionBD.CadenaConexion);
+            conexion.Open();
+
+            string sql = "SELECT Rol, NombreCompleto FROM usuarios WHERE Usuario = @Usuario AND Contrasena = @Contrasena";
+            using var cmd = new MySqlCommand(sql, conexion);
+            cmd.Parameters.AddWithValue("@Usuario", usuario);
+            cmd.Parameters.AddWithValue("@Contrasena", contrasena);
+
+            using var resultado = cmd.ExecuteReader();
+            using var writer = new StreamWriter(context.Response.OutputStream);
+
+            if (resultado.Read())
+            {
+                string rol = resultado.GetString("Rol");
+                string nombreCompleto = resultado.GetString("NombreCompleto");
+
+                // Setea las cookies
+                context.Response.Headers.Add("Set-Cookie", $"usuario={usuario}; path=/");
+                context.Response.Headers.Add("Set-Cookie", $"rol={rol}; path=/");
+                context.Response.Headers.Add("Set-Cookie", $"nombre={nombreCompleto}; path=/");
+
+                writer.Write("{\"exito\":true,\"rol\":\"" + rol + "\",\"nombre\":\"" + nombreCompleto + "\"}");
+            }
+            else
+            {
+                writer.Write("{\"exito\":false}");
+            }
+        }
+    }
+}

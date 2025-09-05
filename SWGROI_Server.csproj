@@ -1,0 +1,207 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <SSDTUnitTestPath Condition="'$(SSDTUnitTestPath)' == ''">$(VsInstallRoot)\Common7\IDE\Extensions\Microsoft\SQLDB</SSDTUnitTestPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SSDTPath Condition="'$(SSDTPath)' == ''">$(VsInstallRoot)\Common7\IDE\Extensions\Microsoft\SQLDB\DAC</SSDTPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>8.0</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="publish\**" />
+    <EmbeddedResource Remove="publish\**" />
+    <None Remove="publish\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="wwwroot\admin.html" />
+    <None Remove="wwwroot\asignaciones.html" />
+    <None Remove="wwwroot\avisos.html" />
+    <None Remove="wwwroot\cotizaciones.html" />
+    <None Remove="wwwroot\Imagenes\CENTRALDEALARMAS.jpg" />
+    <None Remove="wwwroot\Imagenes\CENTRALDEALARMAS1.png" />
+    <None Remove="wwwroot\Imagenes\CENTRALDEALARMAS6" />
+    <None Remove="wwwroot\Imagenes\central_alarmas.png" />
+    <None Remove="wwwroot\Imagenes\RECAPTCHA.png" />
+    <None Remove="wwwroot\login.html" />
+    <None Remove="wwwroot\logout.html" />
+    <None Remove="wwwroot\menu.html" />
+    <None Remove="wwwroot\metricas.html" />
+    <None Remove="wwwroot\recuperar.html" />
+    <None Remove="wwwroot\reportes.html" />
+    <None Remove="wwwroot\retroalimentacion.html" />
+    <None Remove="wwwroot\Scripts\admin.js" />
+    <None Remove="wwwroot\Scripts\avisos.js" />
+    <None Remove="wwwroot\Scripts\cotizaciones_captura.js" />
+    <None Remove="wwwroot\Scripts\login.js" />
+    <None Remove="wwwroot\Scripts\menu.js" />
+    <None Remove="wwwroot\Scripts\recuperar.js" />
+    <None Remove="wwwroot\Scripts\reportes.js" />
+    <None Remove="wwwroot\Scripts\tecnicos.js" />
+    <None Remove="wwwroot\Scripts\tickets.js" />
+    <None Remove="wwwroot\Scripts\ventas.js" />
+    <None Remove="wwwroot\Styles\admin_estilo.css" />
+    <None Remove="wwwroot\Styles\asignaciones_estilo.css" />
+    <None Remove="wwwroot\Styles\avisos_estilo.css" />
+    <None Remove="wwwroot\Styles\estilo_general.css" />
+    <None Remove="wwwroot\Styles\login_estilo.css" />
+    <None Remove="wwwroot\Styles\menu_estilo.css" />
+    <None Remove="wwwroot\Styles\recuperar_estilo.css" />
+    <None Remove="wwwroot\Styles\reportes_estilo.css" />
+    <None Remove="wwwroot\Styles\retroalimentacion_estilo.css" />
+    <None Remove="wwwroot\Styles\tecnicos_estilo.css" />
+    <None Remove="wwwroot\Styles\tickets_estilo.css" />
+    <None Remove="wwwroot\Styles\ventas_estilo.css" />
+    <None Remove="wwwroot\tecnicos.html" />
+    <None Remove="wwwroot\tickets.html" />
+    <None Remove="wwwroot\ventas.html" />
+    <None Remove="wwwroot\ventas_reporte.html" />
+    <None Remove="wwwroot\veravisos.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="wwwroot\admin.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\asignaciones.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\avisos.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\cotizaciones.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\Imagenes\CENTRALDEALARMAS.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\Imagenes\CENTRALDEALARMAS1.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\Imagenes\CENTRALDEALARMAS6">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\Imagenes\central_alarmas.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\Imagenes\RECAPTCHA.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\login.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\logout.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\menu.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\metricas.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\recuperar.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\reportes.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\retroalimentacion.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\Scripts\admin.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\Scripts\avisos.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\Scripts\login.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\Scripts\menu.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\Scripts\recuperar.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\Scripts\reportes.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\Scripts\tecnicos.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\Scripts\tickets.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\Scripts\ventas.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\Styles\admin_estilo.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\Styles\asignaciones_estilo.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\Styles\avisos_estilo.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\Styles\login_estilo.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\Styles\menu_estilo.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\Styles\recuperar_estilo.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\Styles\reportes_estilo.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\Styles\retroalimentacion_estilo.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\Styles\tecnicos_estilo.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\Styles\tickets_estilo.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\Styles\ventas_estilo.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\tecnicos.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\tickets.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\ventas.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\ventas_reporte.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\veravisos.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.6" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="MySql.Data">
+      <HintPath>.\Librerias\MySql.Data.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="RequestRouter.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
+  </ItemGroup>
+  <PropertyGroup>
+    <SsdtUnitTestVersion>3.1</SsdtUnitTestVersion>
+  </PropertyGroup>
+</Project>

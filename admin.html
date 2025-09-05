@@ -1,0 +1,135 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Usuarios y Roles - SWGROI</title>
+    <link rel="stylesheet" href="/styles/admin_estilo.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+</head>
+<body class="dashboard">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar-dark">
+        <h1 class="logo">SWGROI</h1>
+        <nav>
+            <a href="menu.html">Menú principal</a>
+            <a href="admin.html" class="active">Administración</a>
+            <a href="logout.html">Cerrar sesión</a>
+        </nav>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="main-content">
+        <div class="admin-container">
+            <h2 class="titulo-dashboard">Administración de Usuarios</h2>
+
+            <div class="barra-superior-crud">
+                <div class="acciones-filtros">
+                    <form id="formFiltro" onsubmit="return false;" class="filtro-buscador">
+                        <input type="text" id="buscador" placeholder="Buscar nombre o usuario...">
+                        <button type="button" class="btn buscar" onclick="aplicarFiltros()">Buscar</button>
+                        <button type="button" class="btn limpiar" onclick="limpiarFiltros()">Limpiar</button>
+                    </form>
+                    <select id="filtroRol" onchange="aplicarFiltros()">
+                        <option value="">-- Todos los Roles --</option>
+                        <option value="Administrador">Administrador</option>
+                        <option value="CCC">CCC</option>
+                        <option value="Mesa de Control">Mesa de Control</option>
+                        <option value="Operaciones">Operaciones</option>
+                    </select>
+                </div>
+                <div class="acciones-botones">
+                    <button class="btn azul" onclick="abrirFormulario()">Agregar</button>
+                    <button class="btn gris" id="btnExportar">Exportar</button>
+                </div>
+            </div>
+
+            <div id="leyenda" class="leyenda"></div>
+
+            <section class="card">
+                <table class="tabla-crud">
+                    <thead>
+                        <tr>
+                            <th>Acción</th>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Usuario</th>
+                            <th>Rol</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaUsuarios">
+                        <!-- Contenido dinámico -->
+                    </tbody>
+                </table>
+                <div class="paginacion">
+                    <span>Páginas</span>
+                    <span class="paginacion-total">Resultados 0 a 0 de 0</span>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- MODAL FORMULARIO USUARIO -->
+    <div id="modalFormulario" class="modal" role="dialog" aria-labelledby="tituloFormulario" aria-modal="true">
+        <div class="modal-contenido">
+            <div class="modal-header">
+                <h3 id="tituloFormulario"><i data-lucide="user-plus"></i> Agregar Usuario</h3>
+                <button class="cerrar" onclick="cerrarFormulario()" title="Cerrar">&times;</button>
+            </div>
+            <form id="formCrearUsuario">
+                <div class="grupo-form">
+                    <label for="nombre">Nombre Completo:</label>
+                    <input type="text" id="nombre" name="NombreCompleto" required>
+                    <label for="usuario">Usuario:</label>
+                    <input type="text" id="usuario" name="Usuario" required>
+                    <label for="contrasena">Contraseña:</label>
+                    <input type="password" id="contrasena" name="Contrasena" required>
+                    <label for="rol">Rol:</label>
+                    <select id="rol" name="Rol" required>
+                        <option value="Administrador">Administrador</option>
+                        <option value="CCC">CCC</option>
+                        <option value="Mesa de Control">Mesa de Control</option>
+                        <option value="Operaciones">Operaciones</option>
+                    </select>
+                </div>
+                <div class="grupo-botones">
+                    <button type="submit" class="btn azul" id="guardarBtn">Guardar</button>
+                    <button type="button" class="btn naranja hidden" id="actualizarBtn">Actualizar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL VER DETALLE USUARIO -->
+    <div id="modalUsuario" class="modal" role="dialog" aria-labelledby="detalleUsuario" aria-modal="true">
+        <div class="modal-contenido">
+            <div class="modal-header">
+                <h3 id="detalleUsuario"><i data-lucide="eye"></i> Detalle del Usuario</h3>
+                <button class="cerrar" onclick="cerrarModal()" title="Cerrar">&times;</button>
+            </div>
+            <p><strong>ID:</strong> <span id="verId"></span></p>
+            <p><strong>Nombre Completo:</strong> <span id="verNombre"></span></p>
+            <p><strong>Usuario:</strong> <span id="verUsuario"></span></p>
+            <p><strong>Rol:</strong> <span id="verRol"></span></p>
+        </div>
+    </div>
+
+    <!-- JS -->
+    <script src="/scripts/admin.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>lucide.createIcons();</script>
+    <script>
+        function getCookie(nombre) {
+            const valor = `; ${document.cookie}`;
+            const partes = valor.split(`; ${nombre}=`);
+            if (partes.length === 2) return partes.pop().split(';').shift();
+            return "";
+        }
+        const rol = getCookie("rol");
+        if (rol !== "Administrador") {
+            window.location.href = "/menu.html?msg=acceso-denegado";
+        }
+    </script>
+</body>
+</html>
