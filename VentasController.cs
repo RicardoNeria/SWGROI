@@ -144,6 +144,7 @@ LIMIT 1";
                     string razon = (DictGet(d, "razonSocial") ?? "").Trim();
                     string domicilio = (DictGet(d, "domicilio") ?? "").Trim();
                     string comentarios = DictGet(d, "comentariosCotizacion");
+                    string statusPago = (DictGet(d, "statusPago") ?? "Pendiente").Trim();
 
                     if (string.IsNullOrWhiteSpace(folio) || string.IsNullOrWhiteSpace(ovsr3)) { Error(context.Response, 400, "bad_request", "Folio y OVSR3 son requeridos."); return; }
                     if (!ExisteFolioEnTickets(folio)) { Error(context.Response, 400, "invalid_folio", "El folio no existe en tickets."); return; }
@@ -163,7 +164,7 @@ LIMIT 1";
                         int cotizacionID = InsertarCotizacion(cn, tx, folio, estado, monto);
                         InsertarOrdenVenta(cn, tx, cotizacionID, ovsr3, comisionSobreIva);
                         InsertarDetalleVenta(cn, tx, cotizacionID, ovsr3, folio, monto, estado,
-                            cuenta, razon, domicilio, fechaAt, comentarios);
+                            cuenta, razon, domicilio, fechaAt, comentarios, statusPago);
                         tx.Commit();
                         Json(context.Response, new { ok = true });
                         return;
@@ -283,6 +284,29 @@ SELECT
                     bool ok = ReactivarVenta(ov);
                     if (!ok) { Error(context.Response, 404, "not_found", "No encontrado o ya activo."); return; }
                     Json(context.Response, new { ok = true, status = "Reactivado" });
+                    return;
+                }
+
+                // === ACTUALIZAR STATUSPAGO ===
+                if (ruta == "/ventas/actualizar-statuspago" && metodo == "POST")
+                {
+                    var d = LeerJson(context);
+                    var ov = DictGet(d, "ovsr3");
+                    var sp = (DictGet(d, "statusPago") ?? "").Trim();
+                    if (string.IsNullOrWhiteSpace(ov)) { Error(context.Response, 400, "bad_request", "OVSR3 requerido"); return; }
+                    if (string.IsNullOrWhiteSpace(sp)) { Error(context.Response, 400, "bad_request", "StatusPago requerido"); return; }
+                    var permitidos = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "Pendiente", "Promesa de pago", "Pagado" };
+                    if (!permitidos.Contains(sp)) { Error(context.Response, 400, "invalid_status", "Valor no permitido."); return; }
+
+                    const string sql = @"UPDATE ventasdetalle SET StatusPago=@s WHERE OVSR3=@ov AND (StatusPago IS NULL OR UPPER(StatusPago) <> 'CANCELADO')";
+                    using var cn = new MySqlConnection(ConexionBD.CadenaConexion);
+                    cn.Open();
+                    using var cmd = new MySqlCommand(sql, cn);
+                    cmd.Parameters.AddWithValue("@s", sp);
+                    cmd.Parameters.AddWithValue("@ov", ov);
+                    int n = cmd.ExecuteNonQuery();
+                    if (n <= 0) { Error(context.Response, 404, "not_found", "OVSR3 no encontrado o cancelado."); return; }
+                    Json(context.Response, new { ok = true, statusPago = sp });
                     return;
                 }
 
@@ -658,7 +682,7 @@ SELECT LAST_INSERT_ID();";
         private static void InsertarDetalleVenta(
             MySqlConnection cn, MySqlTransaction tx,
             int cotizacionID, string ovsr3, string folio, decimal monto, string estado,
-            string cuenta, string razonSocial, string domicilio, DateTime fechaAtencion, string comentariosCot)
+            string cuenta, string razonSocial, string domicilio, DateTime fechaAtencion, string comentariosCot, string statusPago)
         {
             const string query = @"
 INSERT INTO ventasdetalle (
@@ -670,7 +694,7 @@ INSERT INTO ventasdetalle (
 SELECT @cid, @ovsr3, NOW(),
        @cuenta, @razon, NULL, @domicilio,
        t.Descripcion, @fechaAtencion, t.Responsable,
-       @monto, 'Pendiente', NULL, @comentarios
+       @monto, @status, NULL, @comentarios
 FROM tickets t WHERE Folio = @folio";
             using var cmd = new MySqlCommand(query, cn, tx);
             cmd.Parameters.AddWithValue("@cid", cotizacionID);
@@ -682,6 +706,7 @@ FROM tickets t WHERE Folio = @folio";
             cmd.Parameters.AddWithValue("@fechaAtencion", fechaAtencion);
             cmd.Parameters.AddWithValue("@monto", monto);
             cmd.Parameters.AddWithValue("@comentarios", (object)comentariosCot ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@status", string.IsNullOrWhiteSpace(statusPago) ? "Pendiente" : statusPago);
             cmd.ExecuteNonQuery();
         }
 

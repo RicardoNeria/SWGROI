@@ -57,6 +57,48 @@
                     <button id="btnAbrirModalVenta" class="btn primario" type="button">+ Nueva venta</button>
                 </div>
 
+                <!-- Métrica de Estados -->
+                <section id="metricasEstados" style="margin:10px 0 12px; display:none;">
+                    <div class="resumen">
+                        <span style="font-weight:700;">Métrica de Estados</span>
+                        <span>
+                            Estado:
+                            <select id="metEstado">
+                                <option value="">Todos</option>
+                                <option>ENVIADO</option>
+                                <option>DECLINADA</option>
+                                <option>ALMACEN</option>
+                                <option>OPERACIONES</option>
+                                <option>COBRANZA</option>
+                                <option>FACTURACION</option>
+                                <option>FINALIZADO</option>
+                            </select>
+                        </span>
+                        <span>
+                            Mes:
+                            <select id="metMes">
+                                <option value="">Todos</option>
+                                <option value="1">Enero</option>
+                                <option value="2">Febrero</option>
+                                <option value="3">Marzo</option>
+                                <option value="4">Abril</option>
+                                <option value="5">Mayo</option>
+                                <option value="6">Junio</option>
+                                <option value="7">Julio</option>
+                                <option value="8">Agosto</option>
+                                <option value="9">Septiembre</option>
+                                <option value="10">Octubre</option>
+                                <option value="11">Noviembre</option>
+                                <option value="12">Diciembre</option>
+                            </select>
+                        </span>
+                        <span id="metSuma" class="chip brand">Σ Monto s/IVA: $ 0.00</span>
+                    </div>
+                    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px; padding:12px; margin-top:8px;">
+                        <canvas id="metChart" height="120" aria-label="Gráfica de métricas" role="img"></canvas>
+                    </div>
+                </section>
+
                 <div class="table-wrap table-wrap--viewport">
                     <table class="tabla-crud" id="tablaVentas">
                         <thead>
@@ -204,6 +246,15 @@
                     <div class="campo">
                         <label for="comentariosCotizacion">Comentarios de la cotización</label>
                         <textarea id="comentariosCotizacion" rows="2" placeholder="Notas internas / detalles adicionales..."></textarea>
+                    </div>
+
+                    <div class="campo">
+                        <label for="statusPago">Pago (StatusPago)</label>
+                        <select id="statusPago">
+                            <option>Pendiente</option>
+                            <option>Promesa de pago</option>
+                            <option>Pagado</option>
+                        </select>
                     </div>
                 </div>
             </div>

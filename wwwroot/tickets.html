@@ -76,6 +76,62 @@
                 </div>
             </form>
 
+            <!-- KPIs de estado -->
+            <div id="kpisTickets" class="resumen" style="display:none; margin-top:14px;">
+                <span id="kpiAbiertos">Abiertos: 0</span>
+                <span id="kpiProceso">En Proceso: 0</span>
+                <span id="kpiCerrados">Cerrados: 0</span>
+                <span class="res-divisor" style="margin-left:auto"></span>
+            </div>
+
+            <!-- Tabla CRUD de tickets -->
+            <div class="table-wrap" style="margin-top:12px;">
+                <div class="barra-filtros" style="justify-content: space-between;">
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        <input type="text" id="filtroTicket" placeholder="Filtrar por folio o responsable…" />
+                        <select id="filtroEstadoTicket">
+                            <option value="">Todos</option>
+                            <option>Almacén</option>
+                            <option>Capturado</option>
+                            <option>Programado/Asignado</option>
+                            <option>Abierto</option>
+                            <option>En Proceso</option>
+                            <option>Cerrado</option>
+                        </select>
+                        <button id="btnBuscarTicket" type="button" class="btn azul">Buscar</button>
+                        <button id="btnLimpiarTabla" type="button" class="btn gris">Limpiar</button>
+                    </div>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        <button id="btnExportCsvTickets" type="button" class="btn primario">Exportar CSV</button>
+                        <button id="btnImprimirTickets" type="button" class="btn azul">Imprimir / PDF</button>
+                    </div>
+                </div>
+
+                <div class="table-wrap table-wrap--viewport">
+                    <table class="tabla-crud" id="tablaTickets">
+                        <thead>
+                            <tr>
+                                <th>Folio</th>
+                                <th>Descripción</th>
+                                <th>Estado</th>
+                                <th>Responsable</th>
+                                <th>Comentario</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <div class="paginacion">
+                    <span id="lblPaginacionTickets"></span>
+                    <div class="paginacion-controles">
+                        <button id="btnPrevTickets" class="btn" type="button">Prev</button>
+                        <button id="btnNextTickets" class="btn" type="button">Next</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- MODAL DE CONFIRMACIÓN -->
             <div id="modalConfirmacion" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalConfirmacionTitulo">
                 <div class="modal-contenido">

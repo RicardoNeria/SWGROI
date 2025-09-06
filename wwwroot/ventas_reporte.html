@@ -324,6 +324,8 @@
             <button id="btnRep" class="btn gray toggle">📄 Reporte</button>
             <button id="btnRepFull" class="btn gray toggle">📋 Reporte completo</button>
             <button id="btnPrint" class="btn dark">🖨 Imprimir / Exportar PDF</button>
+            <button id="btnCsv" class="btn gray">⬇ Exportar CSV</button>
+            <button id="btnXls" class="btn gray">⬇ Exportar Excel</button>
             <button id="btnSend" class="btn blue">📤 Enviar a Administración</button>
         </div>
 
@@ -515,6 +517,17 @@
         document.getElementById('btnRep').onclick = () => setMode(false);
         document.getElementById('btnRepFull').onclick = () => setMode(true);
         document.getElementById('btnPrint').onclick = () => window.print();
+        document.getElementById('btnCsv').onclick = () => {
+            const url = new URL('/ventas/exportar-excel', location.origin);
+            if (MODE_FULL) url.searchParams.set('full','1');
+            window.open(url.toString(), '_blank');
+        };
+        document.getElementById('btnXls').onclick = () => {
+            const url = new URL('/ventas/exportar-excel', location.origin);
+            if (MODE_FULL) url.searchParams.set('full','1');
+            url.searchParams.set('format','xls');
+            window.open(url.toString(), '_blank');
+        };
 
         // Modal Enviar
         function abrirModalEnviar() {

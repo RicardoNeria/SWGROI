@@ -156,11 +156,154 @@
 
     document.getElementById("limpiarBtn").addEventListener("click", function () {
         form.reset();
+        // Rehabilitar campos en caso de que el ticket consultado estuviera cerrado
+        folioInput.readOnly = false;
+        descripcionInput.readOnly = false;
+        estadoInput.disabled = false;
+        actualizarBtn.disabled = false;
         estadoInput.selectedIndex = 0;
         estadoSeguimientoInput.value = "";
         comentarioDiv.value = "(No hay comentarios técnicos aún)";
         buscadorFolio.value = "";
     });
+
+    // ===== Tabla CRUD =====
+    const T = {
+        page: 1,
+        pageSize: 10,
+        cache: [],
+        filtro: '',
+        estado: ''
+    };
+    const tabla = document.getElementById('tablaTickets');
+    const tbody = tabla ? tabla.querySelector('tbody') : null;
+    const lblPag = document.getElementById('lblPaginacionTickets');
+    const btnPrev = document.getElementById('btnPrevTickets');
+    const btnNext = document.getElementById('btnNextTickets');
+    const filtroTxt = document.getElementById('filtroTicket');
+    const filtroEstado = document.getElementById('filtroEstadoTicket');
+
+    function renderKPIs(list){
+        const opened = list.filter(x=> (x.Estado||'').toLowerCase()==='abierto').length;
+        const proc = list.filter(x=> (x.Estado||'').toLowerCase()==='en proceso').length;
+        const cerr = list.filter(x=> (x.Estado||'').toLowerCase()==='cerrado').length;
+        const box = document.getElementById('kpisTickets');
+        if(!box) return;
+        document.getElementById('kpiAbiertos').textContent = `Abiertos: ${opened}`;
+        document.getElementById('kpiProceso').textContent = `En Proceso: ${proc}`;
+        document.getElementById('kpiCerrados').textContent = `Cerrados: ${cerr}`;
+        box.style.display = 'flex';
+    }
+
+    function filtrar(list){
+        const f = (T.filtro||'').toLowerCase();
+        const e = (T.estado||'').toLowerCase();
+        return list.filter(t=>{
+            const okF = !f || (String(t.Folio||'').toLowerCase().includes(f) || String(t.Responsable||'').toLowerCase().includes(f));
+            const okE = !e || String(t.Estado||'').toLowerCase() === e;
+            return okF && okE;
+        });
+    }
+
+    function renderTable(){
+        if(!tbody) return;
+        const filtered = filtrar(T.cache);
+        const total = filtered.length;
+        const maxPage = Math.max(1, Math.ceil(total / T.pageSize));
+        if(T.page>maxPage) T.page=maxPage;
+        const start = (T.page-1)*T.pageSize;
+        const pageItems = filtered.slice(start, start+T.pageSize);
+
+        tbody.innerHTML = '';
+        pageItems.forEach(t=>{
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td title="${t.Folio||''}">${t.Folio||''}</td>
+                <td>${(t.Descripcion||'').replace(/</g,'&lt;')}</td>
+                <td>${t.Estado||''}</td>
+                <td>${t.Responsable||''}</td>
+                <td>${t.Comentario||''}</td>
+                <td class="acciones">
+                  <div class="acciones-group">
+                    <button class="btn azul" data-editar="${t.Folio||''}">Editar</button>
+                    <button class="btn rojo" data-eliminar="${t.Folio||''}">Eliminar</button>
+                  </div>
+                </td>`;
+            tbody.appendChild(tr);
+        });
+        if(lblPag) lblPag.textContent = `Página ${T.page} de ${maxPage} · ${total} tickets`;
+        if(btnPrev) btnPrev.disabled = T.page<=1;
+        if(btnNext) btnNext.disabled = T.page>=maxPage;
+    }
+
+    function cargarTickets(){
+        fetch('/seguimiento')
+            .then(r=>r.json())
+            .then(list=>{ T.cache = Array.isArray(list)? list : []; renderKPIs(T.cache); renderTable(); })
+            .catch(()=>{ T.cache=[]; renderTable();});
+    }
+
+    if(btnPrev) btnPrev.addEventListener('click', ()=>{ if(T.page>1){ T.page--; renderTable(); } });
+    if(btnNext) btnNext.addEventListener('click', ()=>{ T.page++; renderTable(); });
+    const btnBuscarTicket = document.getElementById('btnBuscarTicket');
+    if(btnBuscarTicket) btnBuscarTicket.addEventListener('click', ()=>{ T.filtro = (filtroTxt?.value||'').trim(); T.estado = (filtroEstado?.value||'').trim(); T.page=1; renderTable(); });
+    const btnLimpiarTabla = document.getElementById('btnLimpiarTabla');
+    if(btnLimpiarTabla) btnLimpiarTabla.addEventListener('click', ()=>{ if(filtroTxt) filtroTxt.value=''; if(filtroEstado) filtroEstado.value=''; T.filtro=''; T.estado=''; T.page=1; renderTable(); });
+
+    // Delegación de acciones editar/eliminar
+    if(tbody) tbody.addEventListener('click', (e)=>{
+        const bE = e.target.closest('button[data-editar]');
+        if(bE){
+            const fol = bE.getAttribute('data-editar');
+            const t = T.cache.find(x=> String(x.Folio)===String(fol));
+            if(t){
+                folioInput.value = t.Folio||'';
+                descripcionInput.value = t.Descripcion||'';
+                estadoInput.value = t.Estado||'Almacén';
+                estadoSeguimientoInput.value = t.Estado||'';
+                comentarioDiv.value = t.Comentario||'(No hay comentarios técnicos aún)';
+                mostrarMensaje('Formulario cargado para edición.', true);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+            return;
+        }
+        const bD = e.target.closest('button[data-eliminar]');
+        if(bD){
+            const fol = bD.getAttribute('data-eliminar');
+            window.confirmDialog({
+                title: 'Eliminar ticket',
+                message: `¿Eliminar el ticket ${fol}? Esta acción no se puede deshacer.`,
+                okText: 'Eliminar',
+                onOk: ()=>{
+                    fetch('/tickets/eliminar', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ folio: fol }) })
+                        .then(r=>r.ok?r.text():Promise.reject())
+                        .then(()=>{ mostrarMensaje('Ticket eliminado.', true); cargarTickets(); })
+                        .catch(()=> mostrarMensaje('No se pudo eliminar.', false));
+                }
+            });
+        }
+    });
+
+    // Exportar CSV
+    const btnExpCsv = document.getElementById('btnExportCsvTickets');
+    if(btnExpCsv) btnExpCsv.addEventListener('click', ()=>{
+        const list = filtrar(T.cache);
+        const rows = [ ['Folio','Descripcion','Estado','Responsable','Comentario'] ]
+            .concat(list.map(t=> [t.Folio||'', t.Descripcion||'', t.Estado||'', t.Responsable||'', t.Comentario||'']));
+        const csv = rows.map(r=> r.map(v=> {
+            v = (v||'').replace(/\"/g,'\"\"');
+            return (v.includes(',')||v.includes('"')||v.includes('\n')) ? `"${v}"` : v;
+        }).join(',')).join('\n');
+        const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'tickets.csv'; a.click(); URL.revokeObjectURL(a.href);
+    });
+
+    // Imprimir / PDF
+    const btnPrint = document.getElementById('btnImprimirTickets');
+    if(btnPrint) btnPrint.addEventListener('click', ()=> window.print());
+
+    // Carga inicial de la tabla
+    cargarTickets();
 
     function mostrarModalConfirmacion(titulo, mensaje, callback) {
         const modal = document.getElementById("modalConfirmacion");

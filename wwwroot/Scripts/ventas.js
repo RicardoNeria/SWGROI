@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalIva = $('totalIva');
     const comision = $('comision');
     const comentarios = $('comentariosCotizacion');
+    const statusPagoSel = $('statusPago');
     const mvMsg = $('mv-msg');
 
     // Botones
@@ -211,7 +212,8 @@ document.addEventListener('DOMContentLoaded', () => {
             razonSocial: (razon?.value || '').trim(),
             domicilio: (domicilio?.value || '').trim(),
             fechaAtencion: fecha?.value || '',
-            comentariosCotizacion: (comentarios?.value || '').trim()
+            comentariosCotizacion: (comentarios?.value || '').trim(),
+            statusPago: (statusPagoSel?.value || 'Pendiente')
         };
         if (!payload.folioTicket || !payload.ovsr3 || !payload.monto) { setMv('Folio, OVSR3 y Monto son obligatorios.', false); return; }
 
@@ -501,6 +503,50 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (divisorCom) divisorCom.oninput = recompute;
                     recompute();
                     resumenTotales.style.display = 'flex';
+
+                    // Métricas de estados (sumatoria monto s/IVA)
+                    (function metricas(){
+                        const se = document.getElementById('metEstado');
+                        const sm = document.getElementById('metMes');
+                        const box = document.getElementById('metricasEstados');
+                        if(!se || !sm || !box) return;
+                        box.style.display = 'block';
+                        function upd(){
+                            const est = (se.value||'').toUpperCase();
+                            const mm = Number(sm.value||0);
+                            let sum = 0;
+                            const byEstado = {};
+                            (raw||[]).forEach(v=>{
+                                const e = String(v.Estado||'').toUpperCase();
+                                const fa = v.FechaAtencion ? new Date(v.FechaAtencion) : null;
+                                const mes = fa? (fa.getMonth()+1) : 0;
+                                if(est && e!==est) return;
+                                if(mm && mes!==mm) return;
+                                const base = Number(v.Monto||0);
+                                sum += base;
+                                byEstado[e] = (byEstado[e]||0) + base;
+                            });
+                            document.getElementById('metSuma').textContent = 'Σ Monto s/IVA: $ ' + fmt(sum);
+                            // Gráfica simple de barras
+                            const cvs = document.getElementById('metChart');
+                            if(!cvs) return;
+                            const ctx = cvs.getContext('2d');
+                            const keys = Object.keys(byEstado);
+                            const W = cvs.width = cvs.clientWidth || 600; const H = cvs.height;
+                            ctx.clearRect(0,0,W,H);
+                            const max = Math.max(1, ...Object.values(byEstado));
+                            const bw = Math.max(20, Math.floor((W-20)/(keys.length||1))-10);
+                            keys.forEach((k,i)=>{
+                                const val = byEstado[k];
+                                const h = Math.round((val/max)*(H-20));
+                                const x = 10 + i*(bw+10); const y = H-10-h;
+                                ctx.fillStyle = '#2563eb'; ctx.fillRect(x,y,bw,h);
+                                ctx.fillStyle = '#111'; ctx.font = '12px Inter, sans-serif';
+                                ctx.fillText(k, x, H-2);
+                            });
+                        }
+                        se.onchange = upd; sm.onchange = upd; upd();
+                    })();
                 }
 
                 if (feedback && anyFilter) {

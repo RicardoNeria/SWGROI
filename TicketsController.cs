@@ -15,7 +15,11 @@ namespace SWGROI_Server.Controllers
 
             if (context.Request.HttpMethod == "POST")
             {
-                if (url.Contains("/actualizar"))
+                if (url.Contains("/eliminar"))
+                {
+                    EliminarTicket(context);
+                }
+                else if (url.Contains("/actualizar"))
                 {
                     ActualizarTicket(context);
                 }
@@ -43,7 +47,7 @@ namespace SWGROI_Server.Controllers
 
         private static void RegistrarTicket(HttpListenerContext context)
         {
-            using var reader = new StreamReader(context.Request.InputStream);
+            using var reader = new StreamReader(context.Request.InputStream, System.Text.Encoding.UTF8);
             string body = reader.ReadToEnd();
             var datos = ParsearDatos(body);
 
@@ -108,7 +112,7 @@ namespace SWGROI_Server.Controllers
 
         private static void ActualizarTicket(HttpListenerContext context)
         {
-            using var reader = new StreamReader(context.Request.InputStream);
+            using var reader = new StreamReader(context.Request.InputStream, System.Text.Encoding.UTF8);
             string body = reader.ReadToEnd();
             var datos = ParsearDatos(body);
 
@@ -155,20 +159,53 @@ namespace SWGROI_Server.Controllers
         private static Dictionary<string, string> ParsearDatos(string body)
         {
             var dict = new Dictionary<string, string>();
-            body = (body ?? string.Empty).Trim('{', '}').Replace("\"", "");
-            foreach (var par in body.Split(','))
+            // Parser sencillo tolerante a valores con comas: busca "key":"value" segmentos
+            body = body ?? string.Empty;
+            /*
+            var m = System.Text.RegularExpressions.Regex.Matches(body, "\"(?<k>[^\"]+)\"\s*:\s*\"(?<v>.*?)\"");
+            */
+            // Intentar parsear como JSON formal primero
+            try
             {
-                var kv = par.Split(':');
-                if (kv.Length == 2)
+                using var doc = System.Text.Json.JsonDocument.Parse(body);
+                foreach (var prop in doc.RootElement.EnumerateObject())
                 {
-                    string clave = kv[0].Trim();
-                    string valor = kv[1].Trim();
-
-                    if (!dict.ContainsKey(clave))
-                        dict[clave] = valor;
+                    string val = prop.Value.ValueKind == System.Text.Json.JsonValueKind.String
+                        ? prop.Value.GetString()
+                        : prop.Value.GetRawText();
+                    dict[prop.Name] = val ?? string.Empty;
                 }
+                return dict;
+            }
+            catch { }
+            var pattern = @"""(?<k>[^""]+)""\s*:\s*""(?<v>.*?)""";
+            var pattern2 = @"""(?<k>[^""]+)""\s*:\s*""(?<v>.*?)"""; // corregido: verbatim + comillas duplicadas + \s
+            var m = System.Text.RegularExpressions.Regex.Matches(body, pattern2);
+            foreach (System.Text.RegularExpressions.Match mm in m)
+            {
+                var k = mm.Groups["k"].Value;
+                var v = mm.Groups["v"].Value.Replace("\\\"", "\"").Replace("\\n", " ").Replace("\\r", " ").Replace("\\\\", "\\");
+                if (!dict.ContainsKey(k)) dict[k] = v;
             }
             return dict;
+        }
+
+        private static void EliminarTicket(HttpListenerContext context)
+        {
+            using var reader = new StreamReader(context.Request.InputStream, System.Text.Encoding.UTF8);
+            string body = reader.ReadToEnd();
+            var datos = ParsearDatos(body);
+            string folio = datos.ContainsKey("folio") ? (datos["folio"] ?? "").Trim().ToUpperInvariant() : "";
+            if (string.IsNullOrWhiteSpace(folio)) { Json(context.Response, 400, "{\"ok\":false,\"message\":\"Folio requerido\"}"); return; }
+
+            using var conexion = new MySqlConnection(ConexionBD.CadenaConexion);
+            conexion.Open();
+            string sql = "DELETE FROM tickets WHERE Folio=@Folio LIMIT 1";
+            using var cmd = new MySqlCommand(sql, conexion);
+            cmd.Parameters.AddWithValue("@Folio", folio);
+            int n = cmd.ExecuteNonQuery();
+            if (n > 0) Json(context.Response, 200, "{\"ok\":true,\"message\":\"Eliminado\"}");
+            else Json(context.Response, 404, "{\"ok\":false,\"message\":\"No encontrado\"}");
         }
     }
 }

@@ -53,6 +53,7 @@ namespace SWGROI_Server
                 case "recuperar": RecuperarController.Procesar(context); return;
                 case "tickets":
                 case "tickets/actualizar":
+                case "tickets/eliminar":
                     if (!SessionManager.ValidateCsrf(context)) { RechazoCsrf(context); return; }
                     TicketsController.Procesar(context); return;
                 case "seguimiento": TecnicosController.Procesar(context); return;
