@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Menú Principal - SWGROI</title>
+    <!-- Estilo base global y estilos específicos del menú -->
+    <link rel="stylesheet" href="/styles/estilo_general.css">
     <link rel="stylesheet" href="/styles/menu_estilo.css">
     <script src="/scripts/seguridad.js" defer></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,16 +24,13 @@
                 <ul>
                     <li><a href="#">🏠 Menú Principal</a></li>
 
-                    <!-- Administración -->
+                    <!-- Administración (limpio y sin duplicados) -->
                     <li class="has-submenu">
                         <a href="#" onclick="toggleSidebarSubmenu(event)">🛡️ Administración ▼</a>
                         <ul class="submenu">
                             <li><a href="/admin.html">Usuarios y roles</a></li>
-                            <li><a href="/reportes.html">Reportes</a></li>
                             <li><a href="/asignaciones.html">Asignar técnicos</a></li>
                             <li><a href="/cotizaciones.html">Cotizaciones</a></li>
-                            <li><a href="/metricas.html">Métricas</a></li>
-                            <li><a href="/avisos.html">Avisos</a></li>
                         </ul>
                     </li>
 
@@ -40,49 +39,56 @@
                         <a href="#" onclick="toggleSidebarSubmenu(event)">📋 Tickets ▼</a>
                         <ul class="submenu">
                             <li><a href="/tickets.html">Buscar tickets</a></li>
-                            <li><a href="/cotizaciones.html">Estado cotización</a></li>
-                            <li><a href="/veravisos.html">Ver Avisos y comunicados</a></li>
                         </ul>
                     </li>
 
-                    <!-- Técnicos -->
+                    <!-- Mesa de Control -->
                     <li class="has-submenu">
                         <a href="#" onclick="toggleSidebarSubmenu(event)">🔧 Mesa de Control ▼</a>
                         <ul class="submenu">
                             <li><a href="/tecnicos.html">Actualizar estado</a></li>
-                            <li><a href="/tecnicos.html">Retroalimentación</a></li>
                         </ul>
                     </li>
-
-                    <!-- Retroalimentación -->
-                    <li><a href="/retroalimentacion.html">💬 Retroalimentación</a></li>
-
-                    <!-- Avisos -->
-                    <li><a href="/veravisos.html">📢 Avisos</a></li>
-
-                    <!-- Documentos -->
-                    <li><a href="/documentos.html">📂 Documentos</a></li>
 
                     <!-- Ventas -->
                     <li class="has-submenu">
                         <a href="#" onclick="toggleSidebarSubmenu(event)">💲 Ventas ▼</a>
                         <ul class="submenu">
-                            <li><a href="/ventas.html">Buscar cotizaciones</a></li>
-                            <li><a href="/ventas.html">Reportes</a></li>
+                            <li><a href="/ventas.html">Cotizaciones</a></li>
+                            <li><a href="/ventas_reporte.html">Reportes</a></li>
                         </ul>
                     </li>
+
+                    <!-- Avisos y Retroalimentación -->
+                    <li><a href="/veravisos.html">📢 Avisos</a></li>
+                    <li><a href="/retroalimentacion.html">💬 Retroalimentación</a></li>
+                    <li><a href="/reportes.html">📈 Reportes</a></li>
 
                     <!-- Cierre de sesión -->
                     <li><a href="/logout" id="cerrarSesion" class="cerrar-sesion">🚪 Cerrar sesión</a></li>
                 </ul>
             </nav>
+
+            <!-- KPI integrados en la barra lateral -->
+            <div style="padding: 10px 20px;">
+                <div style="background:#34495e;border-radius:10px;padding:12px;color:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2)">
+                    <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:6px">
+                        <strong style="font-size:14px">Indicadores</strong>
+                        <span style="font-size:12px;opacity:.8">en tiempo real</span>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr;gap:8px">
+                        <div style="display:flex;justify-content:space-between"><span>📋 Tickets</span><b id="kpiTickets">0</b></div>
+                        <div style="display:flex;justify-content:space-between"><span>📢 Avisos</span><b id="kpiAvisos">0</b></div>
+                    </div>
+                </div>
+            </div>
         </aside>
 
         <!-- Panel principal -->
         <main class="main-panel">
             <header class="panel-header">
                 <div class="logo-central-panel">
-                    <img src="/imagenes/CENTRALDEALARMAS6" alt="Central de Alarmas" class="logo-panel-img">
+                    <img src="/imagenes/CENTRALDEALARMAS6" alt="Central de Alarmas" class="logo-panel-img" loading="lazy">
                 </div>
                 <h1>Menú Principal - Sistema SWGROI</h1>
                 <div id="leyenda" class="leyenda" style="display: none;"></div>
@@ -206,15 +212,8 @@
             </script>
 
             <script>
-                // Suponiendo que el nombre viene inyectado por el backend o guardado en localStorage
-                function obtenerCookie(nombre) {
-                    const valor = `; ${document.cookie}`;
-                    const partes = valor.split(`; ${nombre}=`);
-                    if (partes.length === 2) return partes.pop().split(';').shift();
-                    return null;
-                }
-
-                const nombreUsuario = obtenerCookie("nombre") || "Usuario";
+                // Lee cookie decodificada desde seguridad.js y evita símbolos como %
+                const nombreUsuario = (window.getCookie ? window.getCookie("nombre") : null);
 
                 function actualizarSaludo() {
                     const saludo = document.getElementById("saludo");
@@ -233,7 +232,7 @@
                     };
                     const formatoHora = ahora.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
 
-                    saludo.textContent = `${textoSaludo}, ${nombreUsuario}.`;
+                    saludo.textContent = nombreUsuario ? `${textoSaludo}, ${nombreUsuario}.` : `${textoSaludo}.`;
                     fechaHora.textContent = `Hoy es ${ahora.toLocaleDateString('es-MX', opcionesFecha)}, ${formatoHora} hrs.`;
                 }
 
@@ -244,15 +243,8 @@
 
 
             <script>
-                function obtenerCookie(nombre) {
-                    const valor = `; ${document.cookie}`;
-                    const partes = valor.split(`; ${nombre}=`);
-                    if (partes.length === 2) return partes.pop().split(';').shift();
-                    return null;
-                }
-
                 function ocultarModulosSegunRol() {
-                    const rol = obtenerCookie("rol");
+                    const rol = (window.getCookie ? window.getCookie("rol") : null);
 
                     if (rol !== "Administrador") {
                         // Ocultar todas las tarjetas de "Gestión Administrativa"
@@ -304,6 +296,8 @@
                     .then(data => {
                         document.getElementById('contadorTickets').textContent = data.tickets;
                         document.getElementById('contadorAvisos').textContent = data.avisos;
+                        const k1 = document.getElementById('kpiTickets'); if(k1) k1.textContent = data.tickets;
+                        const k2 = document.getElementById('kpiAvisos'); if(k2) k2.textContent = data.avisos;
                     })
                     .catch(err => console.error('Error al cargar indicadores:', err));
             </script>

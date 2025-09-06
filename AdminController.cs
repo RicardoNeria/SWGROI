@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using MySql.Data.MySqlClient;
 
 using SWGROI_Server.DB;
+using SWGROI_Server.Security;
 using SWGROI_Server.Models;
 
 namespace SWGROI_Server.Controllers
@@ -25,6 +26,22 @@ namespace SWGROI_Server.Controllers
 
         public static void Procesar(HttpListenerContext context)
         {
+            // Guard clause: Solo Administrador puede acceder a endpoints de administración
+            try
+            {
+                var u = SessionManager.GetUser(context.Request);
+                string rol = u?.role ?? SessionManager.GetCookie(context.Request, "rol");
+                if (!string.Equals(rol, "Administrador", StringComparison.Ordinal))
+                {
+                    Json(context.Response, 403, "{\"exito\":false,\"mensaje\":\"Acceso denegado: se requiere rol Administrador\"}");
+                    return;
+                }
+            }
+            catch
+            {
+                Json(context.Response, 403, "{\"exito\":false,\"mensaje\":\"Acceso denegado\"}");
+                return;
+            }
             string metodo = context.Request.HttpMethod;
             switch (metodo)
             {

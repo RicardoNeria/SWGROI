@@ -17,15 +17,8 @@
         setTimeout(() => { leyenda.style.display = "none"; }, 3000);
     }
 
-    // Función para obtener cookies
-    function getCookie(nombre) {
-        const valor = `; ${document.cookie}`;
-        const partes = valor.split(`; ${nombre}=`);
-        if (partes.length === 2) return partes.pop().split(';').shift();
-        return "";
-    }
-
-    const rol = getCookie("rol");
+    // Usa helper global expuesto por seguridad.js para obtener cookies decodificadas
+    const rol = (window.getCookie ? window.getCookie("rol") : "");
 
     console.log("Rol actual:", rol);
 });

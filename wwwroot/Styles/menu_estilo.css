@@ -47,6 +47,9 @@ body {
 .nav-menu ul {
     list-style: none;
     padding-left: 0;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 260px);
 }
 
 .nav-menu li {
@@ -117,10 +120,12 @@ body {
     font-weight: bold;
 }
 
-    .cerrar-sesion:hover {
+.cerrar-sesion:hover {
         background-color: #c0392b;
         color: #ffffff;
     }
+/* Empuja "Cerrar sesión" al fondo */
+.nav-menu ul li:last-child { margin-top: auto; }
 
 .modulos-tarjetas-dashboard {
     display: grid;
@@ -143,8 +148,7 @@ body {
     font-size: 17px;
     font-weight: bold;
     color: #2c3e50;
-    cursor: default;
-    pointer-events: none;
+    cursor: pointer;
 }
 
 .tarjeta-submenu {
@@ -243,9 +247,26 @@ body {
         margin-bottom: 10px;
     }
 
-    .indicador p {
+.indicador p {
         font-size: 42px;
         font-weight: bold;
         color: #007bff;
         margin: 0;
     }
+
+/* --- Ajustes de homologación global (sobrescriben reglas previas) --- */
+/* Tipografía base alineada a Inter y tokens globales */
+body { font-family: var(--font-family, 'Inter', sans-serif); }
+
+/* Sidebar con scroll para evitar ocultar opciones como "Cerrar sesión" */
+.sidebar { overflow-y: auto; }
+
+/* Consistencia en pesos y espaciados del logo */
+.logo { font-weight: 700; margin-bottom: 20px; }
+
+/* Enlaces del menú con radio, transición y foco accesible */
+.nav-menu a { border-radius: 6px; transition: background-color 0.2s ease; }
+.nav-menu a:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+
+/* Encabezado de tarjetas clicable (para los toggles) */
+.tarjeta-header { cursor: pointer; }
