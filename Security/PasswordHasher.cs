@@ -35,7 +35,7 @@ namespace SWGROI_Server.Security
             var salt = Convert.FromBase64String(parts[2]);
             var key = Convert.FromBase64String(parts[3]);
             var test = Pbkdf2(password ?? string.Empty, salt, iter, key.Length);
-            return CryptographicOperations.FixedTimeEquals(test, key);
+            return FixedTimeEquals(test, key);
         }
 
         public static bool NeedsMigration(string stored)
@@ -46,6 +46,14 @@ namespace SWGROI_Server.Security
             using var pbk = new Rfc2898DeriveBytes(password, salt, iter, HashAlgorithmName.SHA256);
             return pbk.GetBytes(size);
         }
+
+        private static bool FixedTimeEquals(byte[] a, byte[] b)
+        {
+            if (ReferenceEquals(a, b)) return true;
+            if (a == null || b == null || a.Length != b.Length) return false;
+            int diff = 0;
+            for (int i = 0; i < a.Length; i++) diff |= a[i] ^ b[i];
+            return diff == 0;
+        }
     }
 }
-

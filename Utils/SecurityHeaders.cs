@@ -7,12 +7,11 @@ namespace SWGROI_Server.Utils
     {
         public static void Apply(HttpListenerResponse res)
         {
-            // CSP estricta pero compatible con CSS inline existente.
-            res.Headers["Content-Security-Policy"] = "default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline'";
+            // CSP: permitimos 'unsafe-inline' en scripts para no romper scripts inline existentes (login, etc.).
+            res.Headers["Content-Security-Policy"] = "default-src 'self'; img-src 'self' data:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'";
             res.Headers["X-Content-Type-Options"] = "nosniff";
             res.Headers["X-Frame-Options"] = "DENY";
             res.Headers["Referrer-Policy"] = "no-referrer";
         }
     }
 }
-

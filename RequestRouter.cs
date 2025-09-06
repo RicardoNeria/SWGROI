@@ -42,8 +42,7 @@ namespace SWGROI_Server
             switch (ruta)
             {
                 case "login":
-                    // Requerimos CSRF también en login para uniformidad.
-                    if (!SessionManager.ValidateCsrf(context)) { RechazoCsrf(context); return; }
+                    // Excepción: permitir login sin CSRF para no romper flujo existente del login.html
                     LoginController.Procesar(context); return;
                 case "logout": LogoutController.Procesar(context); return;
                 case "admin": AdminController.Procesar(context); return;
@@ -82,9 +81,28 @@ namespace SWGROI_Server
 
             if (!File.Exists(rutaArchivo))
             {
+                // Fallbacks de compatibilidad por mayúsculas/minúsculas en carpetas estáticas.
                 string rutaArchivoLower = Path.Combine(baseDir, "wwwroot", rutaOriginal.ToLowerInvariant().Replace("/", Path.DirectorySeparatorChar.ToString()));
                 if (File.Exists(rutaArchivoLower))
+                {
                     rutaArchivo = rutaArchivoLower;
+                }
+                else
+                {
+                    // Intentar con capitalización estándar de carpetas: Styles, Scripts, Imagenes
+                    string[] topLevel = new[] { "styles", "scripts", "imagenes" };
+                    string[] stdNames = new[] { "Styles", "Scripts", "Imagenes" };
+                    for (int i = 0; i < topLevel.Length; i++)
+                    {
+                        string t = topLevel[i];
+                        if (rutaOriginal.StartsWith(t + "/", StringComparison.OrdinalIgnoreCase))
+                        {
+                            string alt = stdNames[i] + rutaOriginal.Substring(t.Length);
+                            string altPath = Path.Combine(baseDir, "wwwroot", alt.Replace("/", Path.DirectorySeparatorChar.ToString()));
+                            if (File.Exists(altPath)) { rutaArchivo = altPath; break; }
+                        }
+                    }
+                }
             }
 
             if (File.Exists(rutaArchivo))

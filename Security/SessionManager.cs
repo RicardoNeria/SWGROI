@@ -24,7 +24,10 @@ namespace SWGROI_Server.Security
         private static string RandomToken(int bytes = 16)
         {
             var b = new byte[bytes];
-            RandomNumberGenerator.Fill(b);
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(b);
+            }
             return Convert.ToBase64String(b).TrimEnd('=').Replace('+', '-').Replace('/', '_');
         }
 

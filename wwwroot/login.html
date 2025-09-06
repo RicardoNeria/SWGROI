@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="/styles/estilo_general.css">
     <link rel="stylesheet" href="/styles/login_estilo.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    <script src="/scripts/seguridad.js" defer></script>
 </head>
 <body class="body-login">
     <div class="contenedor-login">
@@ -38,58 +37,6 @@
     </div>
 
     <script src="/scripts/ui.js"></script>
-    <script>
-        let captchaResultado = 0;
-
-        function generarCaptcha() {
-            const a = Math.floor(Math.random() * 5) + 1;
-            const b = Math.floor(Math.random() * 5) + 1;
-            captchaResultado = a + b;
-            document.getElementById("captchaPregunta").innerText = `¿Cuánto es ${a} + ${b}?`;
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            generarCaptcha();
-
-            const form = document.getElementById("formLogin");
-            form.addEventListener("submit", async function (e) {
-                e.preventDefault();
-
-                const respuesta = parseInt(document.getElementById("respuestaCaptcha").value);
-                const mensaje = document.getElementById("mensajeLogin");
-
-                const usuario = document.getElementById("usuario").value;
-                const contrasena = document.getElementById("contrasena").value;
-
-                const respuestaServidor = await fetch("/login", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ Usuario: usuario, Contrasena: contrasena })
-                });
-
-                const resultado = await respuestaServidor.json();
-
-                if (!resultado.exito) {
-                    mensaje.textContent = "Usuario o contraseña incorrectos.";
-                    mensaje.style.color = "red";
-                    return;
-                }
-
-                if (respuesta !== captchaResultado) {
-                    mensaje.textContent = "Captcha incorrecto. Por favor, coloca el resultado correcto.";
-                    mensaje.style.color = "red";
-                    return;
-                }
-
-                mensaje.textContent = "Acceso correcto, ingresando al sistema...";
-                mensaje.style.color = "green";
-                setTimeout(() => {
-                    window.location.href = "/menu.html";
-                }, 1000);
-            });
-        });
-    </script>
+    <script src="/Scripts/login.js"></script>
 </body>
 </html>
