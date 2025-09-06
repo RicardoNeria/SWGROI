@@ -48,6 +48,7 @@
     <None Remove="wwwroot\Styles\admin_estilo.css" />
     <None Remove="wwwroot\Styles\asignaciones_estilo.css" />
     <None Remove="wwwroot\Styles\avisos_estilo.css" />
+    <None Remove="wwwroot\Styles\cotizaciones_estilo.css" />
     <None Remove="wwwroot\Styles\estilo_general.css" />
     <None Remove="wwwroot\Styles\login_estilo.css" />
     <None Remove="wwwroot\Styles\menu_estilo.css" />
@@ -149,6 +150,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="wwwroot\Styles\avisos_estilo.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\Styles\cotizaciones_estilo.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="wwwroot\Styles\login_estilo.css">
